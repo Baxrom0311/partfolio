@@ -19,6 +19,7 @@ export default function Navbar() {
 
   return (
     <header
+      className="nav-header"
       style={{
         position: "fixed", top: 0, left: 0, right: 0,
         zIndex: 100, height: 60,

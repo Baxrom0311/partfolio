@@ -32,6 +32,7 @@ export default function Hero() {
     <section
       ref={ref}
       id="home"
+      className="hero-section"
       style={{
         minHeight: "100vh",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -71,7 +72,7 @@ export default function Hero() {
       </div>
 
       {/* Main 2-column grid */}
-      <div style={{
+      <div className="hero-grid" style={{
         maxWidth: 1100, width: "100%", position: "relative",
         display: "grid",
         gridTemplateColumns: "1fr auto",
@@ -147,7 +148,7 @@ export default function Hero() {
           </div>
 
           {/* Stat boxes */}
-          <div style={{ display: "flex", gap: 2, marginBottom: 40, flexWrap: "wrap" }}>
+          <div className="h-stats" style={{ display: "flex", gap: 2, marginBottom: 40, flexWrap: "wrap" }}>
             {[
               { v: "50+", l: "REPOS"    },
               { v: "5+",  l: "STACKS"   },
@@ -178,7 +179,7 @@ export default function Hero() {
           </div>
 
           {/* CTA buttons */}
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div className="h-ctas" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a href="#projects" className="h-cta p5-btn p5-btn-red"
               style={{ boxShadow: "0 0 30px rgba(255,0,53,0.45)" }}>
               <span className="p5-btn-inner">LOYIHALAR →</span>
@@ -195,7 +196,7 @@ export default function Hero() {
         </div>
 
         {/* RIGHT — avatar */}
-        <div className="h-avatar" style={{
+        <div className="h-avatar holo-col" style={{
           position: "relative",
           width: "clamp(220px, 28vw, 380px)",
           flexShrink: 0,

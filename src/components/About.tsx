@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
+import HologramGlobe from "./HologramGlobe";
+import HologramCar   from "./HologramCar";
+import HologramPlane from "./HologramPlane";
 
 const INFO = [
   { k: "NAME",     v: "BAKHROM REYIMBERGANOV" },
@@ -197,7 +200,7 @@ export default function About() {
               <span className="ch-name">CHARACTER INFO</span>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
+            <div className="about-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }}>
               <div>
                 {[
                   { t: "O'ZBEKISTON", out: false },
@@ -237,22 +240,9 @@ export default function About() {
                 </div>
               </div>
 
-              {/* Image placeholder */}
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <div style={{
-                  width: 240, aspectRatio: "3/4",
-                  border: "1px solid rgba(255,0,53,0.22)",
-                  clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)",
-                  background: "rgba(255,0,53,0.03)",
-                  display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", gap: 10,
-                }}>
-                  <span style={{ color: "rgba(255,0,53,0.18)", fontSize: 30 }}>◆</span>
-                  <span style={{
-                    fontFamily: "var(--font-mono)", fontSize: 8,
-                    letterSpacing: "0.25em", color: "rgba(255,0,53,0.22)",
-                  }}>RASM KELADI</span>
-                </div>
+              {/* Globe hologram */}
+              <div className="holo-col" style={{ display: "flex", justifyContent: "flex-end" }}>
+                <HologramGlobe width={420} height={420} />
               </div>
             </div>
           </div>
@@ -317,7 +307,7 @@ export default function About() {
       {/* ═══════════════════════════════════════════════
           HARD SKILLS
           ═══════════════════════════════════════════════ */}
-      <div style={{
+      <div className="about-pad" style={{
         background: "var(--gray)",
         borderTop: "2px solid rgba(255,0,53,0.3)",
         padding: "100px 40px",
@@ -330,7 +320,7 @@ export default function About() {
             <span className="ch-name">HARD SKILLS</span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
+          <div className="about-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }}>
             <div>
               {DOMAINS.map((d, i) => (
                 <div key={d.label} style={{
@@ -359,21 +349,9 @@ export default function About() {
               ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <div style={{
-                width: 240, aspectRatio: "3/4",
-                border: "1px solid rgba(255,0,53,0.18)",
-                clipPath: "polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%)",
-                background: "rgba(255,0,53,0.02)",
-                display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", gap: 10,
-              }}>
-                <span style={{ color: "rgba(255,0,53,0.14)", fontSize: 30 }}>◆</span>
-                <span style={{
-                  fontFamily: "var(--font-mono)", fontSize: 8,
-                  letterSpacing: "0.25em", color: "rgba(255,0,53,0.18)",
-                }}>RASM KELADI</span>
-              </div>
+            {/* BMW M5 hologram */}
+            <div className="holo-col" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <HologramCar width={580} height={340} />
             </div>
           </div>
         </div>
@@ -382,7 +360,7 @@ export default function About() {
       {/* ═══════════════════════════════════════════════
           TECH STACK
           ═══════════════════════════════════════════════ */}
-      <div style={{
+      <div className="about-pad" style={{
         background: "#000",
         borderTop: "2px solid rgba(255,0,53,0.2)",
         padding: "80px 40px",
@@ -404,34 +382,41 @@ export default function About() {
             <div style={{ flex: 1, height: 1, background: "rgba(255,0,53,0.2)" }} />
           </div>
 
-          <div className="ab-tags" style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {TAGS.map(tag => (
-              <span
-                key={tag}
-                className="ab-tag"
-                style={{
-                  fontFamily: "var(--font-mono)", fontSize: 10,
-                  letterSpacing: "0.12em", padding: "5px 12px",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "var(--muted)",
-                  transition: "border-color 0.2s, color 0.2s, background 0.2s",
-                }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = "var(--red)";
-                  el.style.color = "#fff";
-                  el.style.background = "rgba(255,0,53,0.06)";
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = "rgba(255,255,255,0.1)";
-                  el.style.color = "var(--muted)";
-                  el.style.background = "transparent";
-                }}
-              >
-                {tag}
-              </span>
-            ))}
+          <div className="about-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+            <div className="ab-tags" style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {TAGS.map(tag => (
+                <span
+                  key={tag}
+                  className="ab-tag"
+                  style={{
+                    fontFamily: "var(--font-mono)", fontSize: 10,
+                    letterSpacing: "0.12em", padding: "5px 12px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    color: "var(--muted)",
+                    transition: "border-color 0.2s, color 0.2s, background 0.2s",
+                  }}
+                  onMouseEnter={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = "var(--red)";
+                    el.style.color = "#fff";
+                    el.style.background = "rgba(255,0,53,0.06)";
+                  }}
+                  onMouseLeave={e => {
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.borderColor = "rgba(255,255,255,0.1)";
+                    el.style.color = "var(--muted)";
+                    el.style.background = "transparent";
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            {/* Airplane hologram — yarim sahifa */}
+            <div className="holo-col" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <HologramPlane width={500} height={580} />
+            </div>
           </div>
         </div>
       </div>

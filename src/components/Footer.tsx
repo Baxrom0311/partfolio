@@ -1,6 +1,7 @@
 export default function Footer() {
   return (
     <footer
+      className="ft-pad"
       style={{
         background: "#000",
         borderTop: "1px solid rgba(255,0,53,0.2)",

@@ -180,7 +180,77 @@ body::after {
   to   { transform: translateX(0);      opacity: 1; }
 }
 
-/* MOBILE */
+@keyframes hologram-scan {
+  0%   { top: -30px;               }
+  100% { top: calc(100% + 30px);   }
+}
+
+/* ── MOBILE (≤ 768px) ─────────────────────────────────── */
 @media (max-width: 768px) {
   .p5-grid-2 { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Restore cursor on touch */
+  *, *::before, *::after { cursor: auto !important; }
+
+  /* Hide holograms + hero avatar + vertical side texts */
+  .holo-col { display: none !important; }
+  .h-side   { display: none !important; }
+
+  /* Navbar */
+  .nav-header { padding: 0 20px !important; }
+
+  /* Hero */
+  .hero-section { padding: 84px 20px 48px !important; }
+  .hero-grid    { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+  /* Hero names — fit narrow screens, no overflow */
+  .h-name1 h1, .h-name2 h1 {
+    font-size: clamp(42px, 13.5vw, 72px) !important;
+    letter-spacing: 0.03em !important;
+  }
+  .h-ep { font-size: 8px !important; margin-bottom: 24px !important; }
+
+  /* Stat boxes — 2×2 grid, centered */
+  .h-stats { justify-content: center !important; gap: 4px !important; margin-bottom: 32px !important; }
+  .h-stat .p5-skew-inner { padding: 10px 16px !important; }
+
+  /* CTA buttons — full-width stack */
+  .h-ctas { flex-direction: column !important; align-items: stretch !important; }
+  .h-ctas .p5-btn { width: 100%; justify-content: center; }
+  .h-ctas .p5-btn-inner { width: 100%; justify-content: center; padding: 13px 20px; }
+
+  /* About pinned panel */
+  .ab-content { padding: 0 20px !important; }
+  .ch-marker  { margin-bottom: 24px !important; }
+
+  /* About grids + sections */
+  .about-2col { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .about-pad  { padding: 56px 20px !important; }
+
+  /* Projects — single column, no 330px min overflow */
+  .proj-pad  { padding: 72px 20px !important; }
+  .proj-grid { grid-template-columns: 1fr !important; }
+  .pr-card   { padding: 22px 18px !important; }
+
+  /* Contact */
+  .ct-pad { padding: 72px 20px 56px !important; }
+  .ct-card { flex: 1 1 100% !important; }
+
+  /* Footer — centered stack */
+  .ft-pad {
+    padding: 18px 20px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 6px !important;
+  }
+
+  /* Scanline overlay lighter on mobile GPUs */
+  body::after { display: none; }
+}
+
+/* Extra-small phones */
+@media (max-width: 400px) {
+  .h-name1 h1, .h-name2 h1 { font-size: clamp(36px, 12.5vw, 48px) !important; }
+  .h-stat .p5-skew-inner   { padding: 8px 12px !important; }
 }

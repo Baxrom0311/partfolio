@@ -32,6 +32,7 @@ export default function Contact() {
     <section
       ref={ref}
       id="contact"
+      className="ct-pad"
       style={{
         padding: "120px 40px 80px",
         background: "#000",

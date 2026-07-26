@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable} ${bebas.variable}`}>
-      <body style={{ background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-inter)" }}>
+      <body suppressHydrationWarning style={{ background: "var(--bg)", color: "var(--text)", fontFamily: "var(--font-inter)" }}>
         <div className="scanlines" />
         {children}
       </body>

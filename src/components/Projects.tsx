@@ -80,6 +80,7 @@ export default function Projects() {
     <section
       ref={ref}
       id="projects"
+      className="proj-pad"
       style={{ padding: "120px 40px", background: "#000", position: "relative", zIndex: 1 }}
     >
       {/* Grid pattern */}
@@ -110,7 +111,7 @@ export default function Projects() {
           </h2>
         </div>
 
-        <div style={{
+        <div className="proj-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))",
           gap: 2,
