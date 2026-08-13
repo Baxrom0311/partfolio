@@ -17,6 +17,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
+  // Menyu ochiq bo'lsa scroll qulflanadi
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
   return (
     <header
       className="nav-header"
@@ -97,29 +103,37 @@ export default function Navbar() {
         {open ? "✕" : "MENU"}
       </button>
 
-      {/* Mobile dropdown */}
+      {/* Mobile full-screen P5 menu */}
       {open && (
-        <div style={{
-          position: "absolute", top: 60, left: 0, right: 0,
-          background: "rgba(0,0,0,0.97)",
-          borderBottom: "1px solid rgba(255,0,53,0.2)",
-          padding: "16px 40px 24px",
-        }}>
-          {LINKS.map(l => (
+        <div className="mnav">
+          <div className="mnav-bg" />
+          <nav className="mnav-links">
+            {LINKS.map((l, i) => (
+              <a
+                key={l.href} href={l.href}
+                className="mnav-link"
+                style={{ animationDelay: `${0.08 + i * 0.07}s` }}
+                onClick={() => setOpen(false)}
+              >
+                <span className="mnav-num">0{i + 1}</span>
+                {l.label}
+              </a>
+            ))}
             <a
-              key={l.href} href={l.href}
+              href="#contact"
+              className="mnav-link mnav-cta"
+              style={{ animationDelay: `${0.08 + LINKS.length * 0.07}s` }}
               onClick={() => setOpen(false)}
-              style={{
-                display: "block", padding: "12px 0",
-                fontFamily: "var(--font-bebas)", fontSize: 26,
-                letterSpacing: "0.08em", color: "#fff",
-                textDecoration: "none",
-                borderBottom: "1px solid rgba(255,0,53,0.1)",
-              }}
             >
-              ◆ {l.label}
+              <span className="mnav-num">◆</span>
+              ALOQA →
             </a>
-          ))}
+          </nav>
+          <div className="mnav-foot">
+            <a href="https://github.com/Baxrom0311" target="_blank" rel="noopener noreferrer">GITHUB ↗</a>
+            <span>·</span>
+            <a href="mailto:bahromreyimberganov0311@gmail.com">EMAIL ↗</a>
+          </div>
         </div>
       )}
     </header>

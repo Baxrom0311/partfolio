@@ -21,6 +21,16 @@ export default function Hero() {
           .from(".h-scroll",  { opacity: 0, duration: 0.8 }, 1.6)
           .from(".h-side",    { opacity: 0, duration: 1.2 }, 0.5)
           .from(".h-avatar",  { opacity: 0, x: 60, duration: 1.1, ease: "power3.out" }, 0.3);
+
+        const counters = gsap.utils.toArray<HTMLElement>(".h-stat-val");
+        counters.forEach(el => {
+          const target = parseInt(el.dataset.val || "0", 10);
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: target, duration: 1.3, delay: 1.0, ease: "power2.out",
+            onUpdate: () => { el.textContent = Math.round(obj.v) + "+"; },
+          });
+        });
       }, ref);
       return () => ctx.revert();
     };
@@ -41,6 +51,12 @@ export default function Hero() {
         overflow: "hidden",
       }}
     >
+      {/* Manga burst — mobil fon */}
+      <div className="h-burst" />
+
+      {/* Vertical katakana accent */}
+      <div className="h-kanji">フルスタック・開発者</div>
+
       {/* Red diagonal glow left */}
       <div style={{
         position: "absolute", left: 0, top: "30%",
@@ -68,7 +84,7 @@ export default function Hero() {
         letterSpacing: "0.45em", color: "rgba(255,255,255,0.12)",
         whiteSpace: "nowrap", userSelect: "none",
       }}>
-        2024 · UZBEKISTAN · @UNI-NAV · OPEN TO WORK
+        2026 · UZBEKISTAN · @UNI-NAV · OPEN TO WORK
       </div>
 
       {/* Main 2-column grid */}
@@ -82,6 +98,11 @@ export default function Hero() {
 
         {/* LEFT — text content */}
         <div>
+          {/* Compact mobile avatar */}
+          <div className="h-avatar-m">
+            <Image src="/avatar.png" alt="Bakhrom" width={150} height={205} />
+          </div>
+
           {/* Badge */}
           <div className="h-badge" style={{
             display: "inline-flex", alignItems: "center", gap: 10,
@@ -160,7 +181,7 @@ export default function Hero() {
                   padding: "12px 22px", textAlign: "center",
                   borderTop: "2px solid var(--red)",
                 }}>
-                  <div style={{
+                  <div className="h-stat-val" data-val={parseInt(s.v)} style={{
                     fontFamily: "var(--font-bebas)", fontSize: 34,
                     color: "var(--red)", lineHeight: 1,
                     textShadow: "0 0 16px rgba(255,0,53,0.5)",

@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const GeometricBg = dynamic(() => import("./GeometricBg"), { ssr: false });
 const Cursor      = dynamic(() => import("./Cursor"),      { ssr: false });
@@ -36,11 +36,20 @@ function ScrollBar() {
 }
 
 export default function ClientLayer() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setReduced(true);
+    // GSAP animatsiyalarni deyarli bir zumda tugatadi (kontent baribir ko'rinadi)
+    import("gsap").then(({ gsap }) => gsap.globalTimeline.timeScale(1000));
+  }, []);
+
   return (
     <>
       <ScrollBar />
-      <Cursor />
-      <GeometricBg />
+      {!reduced && <Cursor />}
+      {!reduced && <GeometricBg />}
     </>
   );
 }

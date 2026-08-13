@@ -71,61 +71,91 @@ export default function About() {
       const regionC = pin.querySelector<HTMLElement>(".ab-region-c");
       const slash1  = pin.querySelector<HTMLElement>(".ab-slash-1");
       const slash2  = pin.querySelector<HTMLElement>(".ab-slash-2");
+      const flash   = pin.querySelector<HTMLElement>(".ab-flash");
       const content = pin.querySelector<HTMLElement>(".ab-content");
 
-      if (!regionA || !regionB || !regionC || !slash1 || !slash2 || !content) return;
+      if (!regionA || !regionB || !regionC || !slash1 || !slash2 || !flash || !content) return;
+
+      const regions = [regionA, regionB, regionC];
 
       // Paused timeline — ScrollTrigger plays / resets it
       const tl = gsap.timeline({ paused: true });
 
       tl
-        /* ── SLASH 1 sweeps ── */
+        /* ── SLASH 1: katana tez o'tadi ── */
         .fromTo(slash1,
-          { scaleX: 0, opacity: 0 },
-          { scaleX: 1, opacity: 1, duration: 0.22, ease: "power4.in" },
+          { scaleX: 0, opacity: 1 },
+          { scaleX: 1, duration: 0.13, ease: "power4.in" },
         )
-        .to(slash1, { opacity: 0, duration: 0.1 })
+        /* Impact flash — oq chaqnash (anime impact frame) */
+        .set(flash, { backgroundColor: "#fff" })
+        .fromTo(flash, { opacity: 0.85 }, { opacity: 0, duration: 0.14, ease: "power2.out", immediateRender: false })
+        /* Screen shake — zarba tebranishi */
+        .to(regions, {
+          keyframes: [
+            { x: -7, y: 3, duration: 0.04 },
+            { x: 5,  y: -2, duration: 0.04 },
+            { x: -2, y: 1, duration: 0.04 },
+            { x: 0,  y: 0, duration: 0.04 },
+          ],
+        }, "<")
+        /* Kesik ochiladi: A tepaga, B pastga siljiydi — kesilganini his qildiradi */
+        .to(regionA, { y: -9, rotation: -0.35, duration: 0.16, ease: "power2.out" }, "<0.05")
+        .to(regionB, { y: 6, x: 16, skewX: 1.2, duration: 0.16, ease: "power2.out" }, "<")
+        /* Slash izi qolib turadi (qizil cho'g') */
+        .to(slash1, { opacity: 0.35, duration: 0.08 }, "<")
 
-        /* ── DAMAGE: region B shifts (shikast) ── */
-        .fromTo(regionB,
-          { x: 0, skewX: 0 },
-          { x: 20, skewX: 1.5, duration: 0.18, ease: "power2.out" },
-          "<-0.05",
-        )
-
-        /* ── SLASH 2 sweeps ── */
+        /* ── SLASH 2: ikkinchi zarba kuchliroq ── */
         .fromTo(slash2,
-          { scaleX: 0, opacity: 0 },
-          { scaleX: 1, opacity: 1, duration: 0.22, ease: "power4.in" },
-          "+=0.12",
+          { scaleX: 0, opacity: 1 },
+          { scaleX: 1, duration: 0.13, ease: "power4.in" },
+          "+=0.18",
         )
-        .to(slash2, { opacity: 0, duration: 0.1 })
+        .set(flash, { backgroundColor: "#fff" })
+        .fromTo(flash, { opacity: 0.9 }, { opacity: 0, duration: 0.14, ease: "power2.out", immediateRender: false })
+        .to(regions, {
+          keyframes: [
+            { x: 8,  y: -3, duration: 0.04 },
+            { x: -6, y: 3, duration: 0.04 },
+            { x: 3,  y: -1, duration: 0.04 },
+            { x: 0,  y: 0, duration: 0.045 },
+          ],
+        }, "<")
+        /* Ikkinchi kesik ochiladi */
+        .to(regionB, { x: 24, y: 8, skewX: 2, duration: 0.14, ease: "power2.out" }, "<0.05")
+        .to(regionC, { y: 10, rotation: 0.35, duration: 0.14, ease: "power2.out" }, "<")
+        .to(slash2, { opacity: 0.35, duration: 0.08 }, "<")
 
-        /* ── SHATTER: 3 qism uchib ketadi ── */
+        /* ── SHATTER: qizil chaqnash + 3 qism aylanip uchib ketadi ── */
+        .set(flash, { backgroundColor: "#FF0035" }, "+=0.12")
+        .fromTo(flash, { opacity: 0.35 }, { opacity: 0, duration: 0.2, ease: "power2.out", immediateRender: false })
+        .to([slash1, slash2], { opacity: 0, duration: 0.1 }, "<")
         .to(regionA,
-          { y: "-120vh", x: -50, duration: 0.55, ease: "power3.in" },
-          "-=0.05",
+          { y: "-125vh", x: -70, rotation: -6, duration: 0.5, ease: "power3.in" },
+          "<",
         )
         .to(regionB,
-          { x: "120vw", duration: 0.5, ease: "power2.in" },
+          { x: "125vw", rotation: 2.5, skewX: 6, duration: 0.45, ease: "power2.in" },
           "<0.04",
         )
         .to(regionC,
-          { y: "120vh", x: 50, duration: 0.55, ease: "power3.in" },
-          "<",
+          { y: "125vh", x: 70, rotation: 6, duration: 0.5, ease: "power3.in" },
+          "<0.02",
         )
 
         /* ── CONTENT chiqadi ── */
         .fromTo(content,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
-          "-=0.15",
-        );
+          { opacity: 0, y: 26, scale: 0.985 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power2.out" },
+          "-=0.2",
+        )
+        .from(".ab-info-row", { x: -24, opacity: 0, stagger: 0.07, duration: 0.4, ease: "power2.out" }, "-=0.25");
 
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
       ScrollTrigger.create({
         trigger: pin,
         start: "top top",
-        end: "+=180%",        // pinlanib turish davomiyligi
+        end: isMobile ? "+=120%" : "+=180%",  // mobilda qisqaroq hold
         pin: true,
         anticipatePin: 1,
         animation: tl,
@@ -139,7 +169,25 @@ export default function About() {
         scrollTrigger: { trigger: ".ab-tags", start: "top 85%", once: true },
       });
 
-      return () => { ScrollTrigger.getAll().forEach(t => t.kill()); };
+      // Tag glitch cycle — random tags flare up periodically (reduced-motion'da o'chiq)
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const tags = Array.from(document.querySelectorAll<HTMLElement>(".ab-tag"));
+      let glitchInt = 0;
+      if (!reducedMotion) {
+        glitchInt = window.setInterval(() => {
+          for (let k = 0; k < 2; k++) {
+            const el = tags[Math.floor(Math.random() * tags.length)];
+            if (!el) continue;
+            el.classList.add("tag-hot");
+            window.setTimeout(() => el.classList.remove("tag-hot"), 500);
+          }
+        }, 1400);
+      }
+
+      return () => {
+        window.clearInterval(glitchInt);
+        ScrollTrigger.getAll().forEach(t => t.kill());
+      };
     };
 
     const c = init();
@@ -221,7 +269,7 @@ export default function About() {
 
                 <div style={{ marginTop: 28 }}>
                   {INFO.map(row => (
-                    <div key={row.k} style={{
+                    <div key={row.k} className="ab-info-row" style={{
                       display: "flex", gap: 16, alignItems: "baseline",
                       padding: "9px 0",
                       borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -301,6 +349,16 @@ export default function About() {
         <div
           className="ab-slash-2"
           style={{ ...SLASH_STYLE, top: "calc(57% - 1.5px)" }}
+        />
+
+        {/* ── LAYER 7: Impact flash (anime zarba kadri) ── */}
+        <div
+          className="ab-flash"
+          style={{
+            position: "absolute", inset: 0, zIndex: 14,
+            background: "#fff", opacity: 0,
+            pointerEvents: "none",
+          }}
         />
       </div>
 

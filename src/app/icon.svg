@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#000000"/>
+  <g transform="translate(32 32) skewX(-12)">
+    <rect x="-16" y="-21" width="32" height="42" fill="#FF0035"/>
+  </g>
+  <text x="33" y="44" text-anchor="middle"
+        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="34" font-weight="900" fill="#ffffff">B</text>
+</svg>

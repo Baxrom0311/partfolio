@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import HologramBuild from "./HologramBuild";
 
 const CARDS = [
   { label: "EMAIL",  value: "bahromreyimberganov0311@gmail.com", href: "mailto:bahromreyimberganov0311@gmail.com", color: "var(--red)"  },
@@ -68,30 +69,39 @@ export default function Contact() {
           <span className="ch-name">FINAL STAGE</span>
         </div>
 
-        {/* Big text */}
-        <div className="ct-lines" style={{ marginBottom: 64 }}>
-          {[
-            { t: "LET'S",     out: false },
-            { t: "BUILD",     out: true  },
-            { t: "SOMETHING", out: false },
-          ].map((l, i) => (
-            <div key={i} className="lw">
-              <h2
-                className="ct-line"
-                style={{
-                  fontFamily: "var(--font-bebas)",
-                  fontSize: "clamp(60px, 11vw, 124px)",
-                  letterSpacing: "0.02em", lineHeight: 1,
-                  display: "block",
-                  color: l.out ? "transparent" : "#fff",
-                  WebkitTextStroke: l.out ? "1.5px rgba(255,0,53,0.9)" : "none",
-                  clipPath: "inset(0% 0 0 0)",
-                }}
-              >
-                {l.t}
-              </h2>
-            </div>
-          ))}
+        {/* Big text + build hologram */}
+        <div className="about-2col" style={{
+          display: "grid", gridTemplateColumns: "1fr auto",
+          gap: 48, alignItems: "center", marginBottom: 64,
+        }}>
+          <div className="ct-lines">
+            {[
+              { t: "LET'S",     out: false },
+              { t: "BUILD",     out: true  },
+              { t: "SOMETHING", out: false },
+            ].map((l, i) => (
+              <div key={i} className="lw">
+                <h2
+                  className="ct-line"
+                  style={{
+                    fontFamily: "var(--font-bebas)",
+                    fontSize: "clamp(60px, 11vw, 124px)",
+                    letterSpacing: "0.02em", lineHeight: 1,
+                    display: "block",
+                    color: l.out ? "transparent" : "#fff",
+                    WebkitTextStroke: l.out ? "1.5px rgba(255,0,53,0.9)" : "none",
+                    clipPath: "inset(0% 0 0 0)",
+                  }}
+                >
+                  {l.t}
+                </h2>
+              </div>
+            ))}
+          </div>
+
+          <div className="ct-holo">
+            <HologramBuild width={440} height={360} />
+          </div>
         </div>
 
         {/* Contact cards */}

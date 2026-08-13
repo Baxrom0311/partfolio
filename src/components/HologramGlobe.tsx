@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { isLandLatLon } from "@/lib/landMask";
 
 const PI2 = Math.PI * 2;
 
@@ -21,45 +22,22 @@ const px   = new Float32Array(N_PTS);
 const py   = new Float32Array(N_PTS);
 const pdz  = new Float32Array(N_PTS);
 
-const DEPTH_PASSES = [
-  { lo: -2,    hi: -0.50, r: 1.0, fill: "rgba(255,45,53,0.25)" },
-  { lo: -0.50, hi:  0.00, r: 1.3, fill: "rgba(255,45,53,0.52)" },
-  { lo:  0.00, hi:  0.50, r: 1.7, fill: "rgba(255,45,53,0.82)" },
-  { lo:  0.50, hi:  2,    r: 2.0, fill: "rgba(255,45,53,0.96)" },
-];
-
-function isLand(lat: number, lon: number): boolean {
-  const la = lat, lo = lon;
-  if (la > 25  && la < 72  && lo > -170 && lo < -53)  return true; // N.America
-  if (la > 7   && la < 25  && lo > -95  && lo < -77)  return true; // C.America
-  if (la > -57 && la < 13  && lo > -82  && lo < -34)  return true; // S.America
-  if (la > 36  && la < 72  && lo > -12  && lo < 42)   return true; // Europe
-  if (la > 49  && la < 62  && lo > -12  && lo < 2)    return true; // British Isles
-  if (la > -35 && la < 37  && lo > -18  && lo < 52)   return true; // Africa
-  if (la > 12  && la < 32  && lo > 36   && lo < 62)   return true; // Arabia
-  if (la > 48  && la < 78  && lo > 26   && lo < 180)  return true; // Russia/Asia
-  if (la > 48  && la < 78  && lo > -180 && lo < -165) return true; // E.Russia
-  if (la > 7   && la < 37  && lo > 68   && lo < 88)   return true; // India
-  if (la > 5   && la < 28  && lo > 98   && lo < 110)  return true; // Indochina
-  if (la > 20  && la < 50  && lo > 106  && lo < 145)  return true; // E.Asia
-  if (la > 30  && la < 46  && lo > 129  && lo < 146)  return true; // Japan
-  if (la > -10 && la < 8   && lo > 95   && lo < 142)  return true; // SE Asia isl.
-  if (la > 5   && la < 20  && lo > 117  && lo < 128)  return true; // Philippines
-  if (la > -44 && la < -10 && lo > 113  && lo < 155)  return true; // Australia
-  if (la > -47 && la < -34 && lo > 165  && lo < 178)  return true; // New Zealand
-  if (la > 60  && la < 84  && lo > -58  && lo < -16)  return true; // Greenland
-  if (la > 63  && la < 67  && lo > -26  && lo < -12)  return true; // Iceland
-  if (la > -27 && la < -11 && lo > 43   && lo < 51)   return true; // Madagascar
-  if (la < -72)                                        return true; // Antarctica
-  return false;
+const N_BUCKETS = 12;
+const B_R = new Float32Array(N_BUCKETS);
+const B_A: string[] = [];
+for (let b = 0; b < N_BUCKETS; b++) {
+  const t = (b + 0.5) / N_BUCKETS;          // 0=back … 1=front
+  B_R[b] = 0.9 + t * 1.2;                   // radius 0.9px → 2.1px
+  B_A.push("rgba(255,45,53," + (0.18 + t * 0.78).toFixed(3) + ")");
 }
 
 const LAND = new Uint8Array(N_PTS);
 for (let i = 0; i < N_PTS; i++) {
-  const lon360 = (BP[i] % PI2) * (180 / Math.PI);
-  const lon    = lon360 > 180 ? lon360 - 360 : lon360;
-  const lat    = 90 - TH[i] * (180 / Math.PI);
-  LAND[i]      = isLand(lat, lon) ? 1 : 0;
+  // Screen x = cos(phi), so larger phi renders further LEFT; real longitude must
+  // therefore DECREASE with phi or continents come out mirror-imaged.
+  const lonDeg = ((-(BP[i]) * 180 / Math.PI) % 360 + 540) % 360 - 180;
+  const latDeg = 90 - TH[i] * 180 / Math.PI;
+  LAND[i] = isLandLatLon(latDeg, lonDeg) ? 1 : 0;
 }
 
 const CORNERS = ["tl","tr","bl","br"] as const;
@@ -71,18 +49,23 @@ export default function HologramGlobe({ width = 360, height = 360 }: Props) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.width  = width;
-    canvas.height = height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = width  * dpr;
+    canvas.height = height * dpr;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const W = width, H = height;
     const R  = Math.min(W, H) * 0.44;
     const CX = W / 2, CY = H / 2;
 
     let t = 0, scanY = 0, raf = 0;
 
-    const draw = () => {
-      t += 0.012; scanY = (scanY + 0.85) % (H + 30);
+    let last = performance.now();
+    const draw = (now: number) => {
+      const dt = Math.min((now - last) / 16.667, 3);
+      last = now;
+      t += 0.012 * dt; scanY = (scanY + 0.85 * dt) % (H + 30);
       ctx.clearRect(0, 0, W, H);
 
       // Project Fibonacci sphere — rotating around Y axis
@@ -107,15 +90,19 @@ export default function HologramGlobe({ width = 360, height = 360 }: Props) {
       ctx.fillStyle = "rgba(255,45,53,0.09)";
       ctx.fill();
 
-      // Land: 4 depth tiers — qitalar 3D depth bilan
-      for (const { lo, hi, r, fill } of DEPTH_PASSES) {
+      // Land: 12-bucket smooth depth shading (back→front, painter's order)
+      for (let b = 0; b < N_BUCKETS; b++) {
+        const r = B_R[b];
         ctx.beginPath();
         for (let i = 0; i < N_PTS; i++) {
-          if (!LAND[i] || pdz[i] < lo || pdz[i] >= hi) continue;
+          if (!LAND[i]) continue;
+          let bi = ((pdz[i] + 1) * 0.5 * N_BUCKETS) | 0;
+          if (bi < 0) bi = 0; else if (bi >= N_BUCKETS) bi = N_BUCKETS - 1;
+          if (bi !== b) continue;
           ctx.moveTo(px[i] + r, py[i]);
           ctx.arc(px[i], py[i], r, 0, PI2);
         }
-        ctx.fillStyle = fill;
+        ctx.fillStyle = B_A[b];
         ctx.fill();
       }
 
@@ -134,14 +121,25 @@ export default function HologramGlobe({ width = 360, height = 360 }: Props) {
 
       if (Math.random() < 0.012) { ctx.fillStyle = "rgba(255,0,53,0.03)"; ctx.fillRect(0, 0, W, H); }
 
-      raf = requestAnimationFrame(draw);
+      if (running) raf = requestAnimationFrame(draw);
     };
-    draw();
-    return () => cancelAnimationFrame(raf);
+
+    // Reduced motion: bitta statik kadr, loop yo'q
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let running = !reduced;
+    const io = new IntersectionObserver(([entry]) => {
+      const vis = entry.isIntersecting;
+      if (vis && !running) { running = true; last = performance.now(); raf = requestAnimationFrame(draw); }
+      else if (!vis && running) { running = false; cancelAnimationFrame(raf); }
+    }, { threshold: 0.05 });
+    if (!reduced) io.observe(canvas);
+
+    raf = requestAnimationFrame(draw);
+    return () => { running = false; cancelAnimationFrame(raf); io.disconnect(); };
   }, [width, height]);
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div style={{ position: "relative", width: "100%", maxWidth: width, aspectRatio: `${width} / ${height}`, display: "inline-block" }}>
       {CORNERS.map(c => (
         <div key={c} style={{
           position: "absolute", zIndex: 4,
@@ -155,7 +153,7 @@ export default function HologramGlobe({ width = 360, height = 360 }: Props) {
         }} />
       ))}
       <canvas ref={canvasRef} style={{
-        display: "block", width, height,
+        display: "block", width: "100%", height: "100%",
         clipPath: "polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)",
         filter: "drop-shadow(0 0 18px rgba(255,0,53,0.32))",
       }} />

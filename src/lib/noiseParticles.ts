@@ -125,7 +125,7 @@ function h(
         pt = {
           x: edge.a[0] + (edge.b[0] - edge.a[0]) * along,
           y: edge.a[1] + (edge.b[1] - edge.a[1]) * along,
-          z: (r * 2 - 1) * depth,
+          z: r < 0.45 ? -depth : r < 0.9 ? depth : (cc * 2 - 1) * depth,
         };
       } else if (!found) {
         // Fill (barycentric in triangulated area)
@@ -161,7 +161,7 @@ export function buildCarParticles(count: number): Pt3[] {
     wheels:  [[0.6, -0.17], [-0.64, -0.17]],
     wr:      0.25,
     wFrac:   0.18,
-    rimFrac: 0.4,
+    rimFrac: 0.62,
     S:       1.2,
     yShift:  0.1,
   });
@@ -200,20 +200,21 @@ export function buildPlaneParticles(count: number): Pt3[] {
       const ang = r * PI2;
       pt = { x: nx * 1.18, y: Math.cos(ang) * rad, z: Math.sin(ang) * rad };
     } else if (s < 0.66) {
-      // Wing — skip particles too close to fuselage (body junction gap)
+      // Wing — mirrored pair, skip body-junction region
       const amp = r;
       const ox  = e * (0.13 + amp * 0.98);
-      if (ox < 0.20) continue;                     // ← inside body region, skip
-      const side = a % 2 === 0 ? 1 : -1;
-      pt = {
-        x: 0.4 - amp * 0.8 - e * (0.6 - amp * 0.44),
-        y: (a % 2 === 0 ? 0.02 : -0.02),
-        z: side * ox,
-      };
+      if (ox < 0.20) continue;
+      const wx = 0.4 - amp * 0.8 - e * (0.6 - amp * 0.44);
+      result.push({ x: wx * scale, y: 0.02 * scale, z:  ox * scale });
+      if (result.length < count) result.push({ x: wx * scale, y: 0.02 * scale, z: -ox * scale });
+      continue;
     } else if (s < 0.80) {
-      // Tail
-      const side = a % 2 === 0 ? 1 : -1;
-      pt = { x: -0.86 - e * 0.2 - r * (0.26 - e * 0.14), y: 0.04 + (a % 2 ? 0.015 : -0.015), z: side * (0.05 + e * 0.34) };
+      // Tail — mirrored pair
+      const tx = -0.86 - e * 0.2 - r * (0.26 - e * 0.14);
+      const tz = 0.05 + e * 0.34;
+      result.push({ x: tx * scale, y: 0.04 * scale, z:  tz * scale });
+      if (result.length < count) result.push({ x: tx * scale, y: 0.04 * scale, z: -tz * scale });
+      continue;
     } else {
       // Tail fin
       pt = bary([-0.78, 0.13], [-1.06, 0.13], [-1.06, 0.52], e, r, 0.02, a);

@@ -16,12 +16,14 @@ const px  = new Float32Array(NP);
 const py  = new Float32Array(NP);
 const pdz = new Float32Array(NP);
 
-const DEPTH_PASSES = [
-  { lo: -2,    hi: -0.50, r: 1.0, fill: "rgba(255,45,53,0.25)" },
-  { lo: -0.50, hi:  0.00, r: 1.3, fill: "rgba(255,45,53,0.52)" },
-  { lo:  0.00, hi:  0.50, r: 1.7, fill: "rgba(255,45,53,0.82)" },
-  { lo:  0.50, hi:  2,    r: 2.0, fill: "rgba(255,45,53,0.96)" },
-];
+const N_BUCKETS = 12;
+const B_R = new Float32Array(N_BUCKETS);
+const B_A: string[] = [];
+for (let b = 0; b < N_BUCKETS; b++) {
+  const t = (b + 0.5) / N_BUCKETS;          // 0=back … 1=front
+  B_R[b] = 0.9 + t * 1.2;                   // radius 0.9px → 2.1px
+  B_A.push("rgba(255,45,53," + (0.18 + t * 0.78).toFixed(3) + ")");
+}
 
 const CORNERS = ["tl","tr","bl","br"] as const;
 interface Props { width?: number; height?: number }
@@ -32,17 +34,18 @@ export default function HologramPlane({ width = 500, height = 580 }: Props) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    canvas.width  = width;
-    canvas.height = height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width  = width  * dpr;
+    canvas.height = height * dpr;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const W = width, H = height;
 
     // Polygon lives in XY plane — max radius from center ≈ 1.30 units
     // ne sized so max extent = 1.30 * ne < half-canvas-width
-    const ne    = Math.min(W, H) * 0.34;
+    const ne    = Math.min(W, H) * 0.38;
     const CX    = W / 2, CY = H / 2;
-    const focal = ne * 3.0;  // wider focal = less distortion at edges
 
     // Fixed 45° X-tilt then Y-spin — plane seen from 45° angle while rotating
     const RX = Math.PI / 4;
@@ -50,9 +53,12 @@ export default function HologramPlane({ width = 500, height = 580 }: Props) {
 
     let iy = 0, scanY = 0, raf = 0;
 
-    const draw = () => {
-      iy += 0.007;
-      scanY = (scanY + 0.90) % (H + 30);
+    let last = performance.now();
+    const draw = (now: number) => {
+      const dt = Math.min((now - last) / 16.667, 3);
+      last = now;
+      iy += 0.007 * dt;
+      scanY = (scanY + 0.90 * dt) % (H + 30);
       ctx.clearRect(0, 0, W, H);
 
       const cosY = Math.cos(iy), sinY = Math.sin(iy);
@@ -65,22 +71,24 @@ export default function HologramPlane({ width = 500, height = 580 }: Props) {
         // Fixed 45° X-tilt
         const ry  =  y * cosRX - rz * sinRX;
         const rz2 =  y * sinRX + rz * cosRX;
-        // Perspective
-        const A   = focal / (focal + rz2 * ne);
-        px[i]  = CX + rx  * ne * A;
-        py[i]  = CY - ry  * ne * A;
+        // Orthographic projection — rigid shape, no perspective warp
+        px[i]  = CX + rx * ne;
+        py[i]  = CY - ry * ne;
         pdz[i] = rz2;
       }
 
-      // 4 depth passes: back→front for 3D depth illusion
-      for (const { lo, hi, r, fill } of DEPTH_PASSES) {
+      // 12 depth buckets: back→front, painter's order
+      for (let b = 0; b < N_BUCKETS; b++) {
+        const r = B_R[b];
         ctx.beginPath();
         for (let i = 0; i < NP; i++) {
-          if (pdz[i] < lo || pdz[i] >= hi) continue;
+          let bi = ((pdz[i] + 1) * 0.5 * N_BUCKETS) | 0;
+          if (bi < 0) bi = 0; else if (bi >= N_BUCKETS) bi = N_BUCKETS - 1;
+          if (bi !== b) continue;
           ctx.moveTo(px[i] + r, py[i]);
           ctx.arc(px[i], py[i], r, 0, PI2);
         }
-        ctx.fillStyle = fill;
+        ctx.fillStyle = B_A[b];
         ctx.fill();
       }
 
@@ -98,14 +106,25 @@ export default function HologramPlane({ width = 500, height = 580 }: Props) {
 
       if (Math.random() < 0.012) { ctx.fillStyle = "rgba(255,0,53,0.03)"; ctx.fillRect(0, 0, W, H); }
 
-      raf = requestAnimationFrame(draw);
+      if (running) raf = requestAnimationFrame(draw);
     };
-    draw();
-    return () => cancelAnimationFrame(raf);
+
+    // Reduced motion: bitta statik kadr, loop yo'q
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let running = !reduced;
+    const io = new IntersectionObserver(([entry]) => {
+      const vis = entry.isIntersecting;
+      if (vis && !running) { running = true; last = performance.now(); raf = requestAnimationFrame(draw); }
+      else if (!vis && running) { running = false; cancelAnimationFrame(raf); }
+    }, { threshold: 0.05 });
+    if (!reduced) io.observe(canvas);
+
+    raf = requestAnimationFrame(draw);
+    return () => { running = false; cancelAnimationFrame(raf); io.disconnect(); };
   }, [width, height]);
 
   return (
-    <div style={{ position: "relative", width, height, display: "inline-block" }}>
+    <div style={{ position: "relative", width: "100%", maxWidth: width, aspectRatio: `${width} / ${height}`, display: "inline-block" }}>
       {CORNERS.map(c => (
         <div key={c} style={{
           position: "absolute", zIndex: 4,
@@ -119,7 +138,7 @@ export default function HologramPlane({ width = 500, height = 580 }: Props) {
         }} />
       ))}
       <canvas ref={canvasRef} style={{
-        display: "block", width, height,
+        display: "block", width: "100%", height: "100%",
         clipPath: "polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,0 100%)",
         filter: "drop-shadow(0 0 18px rgba(255,0,53,0.30))",
       }} />

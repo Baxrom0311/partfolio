@@ -185,9 +185,349 @@ body::after {
   100% { top: calc(100% + 30px);   }
 }
 
+/* ═══ PROJECT CARDS — PHANTOM FILE (3D tilt, holo-shine, target-lock) ═══ */
+.pf-card {
+  --acc: var(--red);
+  --rx: 0deg; --ry: 0deg;      /* 3D tilt burchagi (JS beradi) */
+  --mx: 50%; --my: 50%;        /* sichqoncha pozitsiyasi — shine uchun */
+  --px: 0; --py: 0;            /* -0.5..0.5 — parallax uchun */
+  position: relative; display: block; text-decoration: none;
+  perspective: 900px;
+  animation: pf-float 7s ease-in-out infinite;
+}
+.pf-card:nth-child(2n) { animation-delay: -2.4s; }
+.pf-card:nth-child(3n) { animation-delay: -4.6s; }
+.pf-card:hover { animation-play-state: paused; z-index: 2; }
+@keyframes pf-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+
+.pf-inner {
+  position: relative; overflow: hidden;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.16s ease-out;
+  background: #0c0c0c;
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+  border-left: 3px solid var(--acc);
+  padding: 26px 24px 20px;
+  height: 100%;
+}
+
+/* Fon: diagonal qizil xanjar + hover'da yuruvchi chiziqlar */
+.pf-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(115deg, transparent 58%, rgba(255,0,53,0.07) 58%);
+}
+.pf-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(-45deg, rgba(255,0,53,0.05) 0 10px, transparent 10px 24px);
+  background-size: 34px 34px;
+  opacity: 0; transition: opacity 0.3s;
+  animation: pf-stripes 1.1s linear infinite paused;
+}
+.pf-card:hover .pf-bg::after { opacity: 1; animation-play-state: running; }
+@keyframes pf-stripes { to { background-position: 34px 34px; } }
+
+/* Manga speed-line burst — hover'da aylanadi */
+.pf-burst {
+  position: absolute; inset: -45%; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,0,53,0.10) 0deg 3deg, transparent 3deg 13deg);
+  opacity: 0; transition: opacity 0.3s;
+  animation: pf-spin 16s linear infinite paused;
+}
+.pf-card:hover .pf-burst { opacity: 1; animation-play-state: running; }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+
+/* Holo-shine — sichqonchaga ergashadi */
+.pf-shine {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,0.13), transparent 55%);
+  opacity: 0; transition: opacity 0.25s;
+}
+.pf-card:hover .pf-shine { opacity: 1; }
+
+/* Skan chizig'i — hover'da tepadan pastga o'tadi */
+.pf-scan {
+  position: absolute; left: 0; right: 0; height: 26px; top: -30px;
+  background: linear-gradient(transparent, rgba(255,0,53,0.12), transparent);
+  opacity: 0; pointer-events: none;
+  animation: hologram-scan 1.7s linear infinite paused;
+}
+.pf-card:hover .pf-scan { opacity: 1; animation-play-state: running; }
+
+/* Ghost raqam — parallax bilan suzadi */
+.pf-ghost {
+  position: absolute; top: -12px; right: 10px;
+  transform: translate(calc(var(--px) * 14px), calc(var(--py) * 12px));
+  font-family: var(--font-bebas); font-size: 100px; line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.06);
+  pointer-events: none; user-select: none;
+  transition: -webkit-text-stroke-color 0.3s;
+}
+.pf-card:hover .pf-ghost { -webkit-text-stroke-color: rgba(255,0,53,0.45); }
+
+/* Target-lock burchaklar — hover'da tashqaridan uchib kelib qulflaydi */
+.pf-c {
+  position: absolute; width: 16px; height: 16px; z-index: 3;
+  opacity: 0; transition: transform 0.22s cubic-bezier(0.3, 1.6, 0.4, 1), opacity 0.18s;
+  pointer-events: none;
+}
+.pf-c-tl { top: 8px;    left: 8px;   border-top: 2px solid var(--acc);    border-left: 2px solid var(--acc);  transform: translate(16px, 16px); }
+.pf-c-tr { top: 8px;    right: 32px; border-top: 2px solid var(--acc);    border-right: 2px solid var(--acc); transform: translate(-16px, 16px); }
+.pf-c-bl { bottom: 8px; left: 24px;  border-bottom: 2px solid var(--acc); border-left: 2px solid var(--acc);  transform: translate(16px, -16px); }
+.pf-c-br { bottom: 8px; right: 8px;  border-bottom: 2px solid var(--acc); border-right: 2px solid var(--acc); transform: translate(-16px, -16px); }
+.pf-card:hover .pf-c { opacity: 1; transform: translate(0, 0); }
+
+/* Kontent qatlamlari — teskari parallax (chuqurlik illyuziyasi) */
+.pf-head, .pf-title, .pf-sub, .pf-desc, .pf-tags, .pf-foot { position: relative; z-index: 2; }
+.pf-title, .pf-tags {
+  transform: translate(calc(var(--px) * -7px), calc(var(--py) * -5px));
+}
+
+.pf-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.pf-file {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.15em; color: var(--acc);
+}
+.pf-barcode {
+  width: 54px; height: 12px; margin-left: auto; opacity: 0.5;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.5) 0 2px, transparent 2px 5px, rgba(255,255,255,0.3) 5px 6px, transparent 6px 9px);
+}
+.pf-badge {
+  transform: skewX(-12deg); background: var(--acc); padding: 2px 10px;
+}
+.pf-badge span {
+  display: block; transform: skewX(12deg);
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.pf-title {
+  font-family: var(--font-bebas); font-size: 30px;
+  letter-spacing: 0.04em; color: #fff; line-height: 1;
+  margin-bottom: 6px;
+}
+.pf-card:hover .pf-title { animation: pf-glitch 0.32s steps(2) 1; }
+@keyframes pf-glitch {
+  0%   { text-shadow: none; }
+  25%  { text-shadow: 3px 0 var(--cyan), -3px 0 var(--red); }
+  50%  { text-shadow: -3px 0 var(--cyan), 3px 0 var(--red); }
+  75%  { text-shadow: 2px 0 var(--cyan), -2px 0 var(--red); }
+  100% { text-shadow: none; }
+}
+.pf-sub {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.1em; color: var(--muted);
+  margin-bottom: 13px;
+}
+.pf-desc {
+  font-size: 13px; line-height: 1.7; color: #8a8a8a;
+  margin-bottom: 16px;
+}
+.pf-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
+.pf-tag {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.12em; padding: 3px 9px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--muted);
+  transition: border-color 0.2s, color 0.2s;
+}
+.pf-card:hover .pf-tag { border-color: rgba(255,0,53,0.4); color: #ccc; }
+.pf-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+}
+.pf-status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.2em; color: var(--muted);
+}
+.pf-status i {
+  width: 6px; height: 6px; background: var(--acc);
+  transform: rotate(45deg);
+  animation: pf-blink 1.6s ease-in-out infinite;
+}
+@keyframes pf-blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--acc); }
+  50%      { opacity: 0.25; box-shadow: none; }
+}
+.pf-link {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--acc);
+}
+.pf-link b { display: inline-block; font-weight: 700; transition: transform 0.22s; }
+.pf-card:hover .pf-link b { transform: translate(3px, -3px); }
+
+@media (max-width: 768px) {
+  .pf-ghost { font-size: 74px; }
+  .pf-inner { padding: 22px 18px 18px; }
+  .pf-card  { animation: none; }
+}
+
+/* ═══ MOBILE FULL-SCREEN MENU — P5 uslub ═══════════════ */
+.mnav {
+  position: fixed; inset: 0; z-index: 99;
+  background: #050505;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 80px 32px 40px;
+  animation: mnav-in 0.25s ease-out;
+}
+@keyframes mnav-in { from { opacity: 0; } to { opacity: 1; } }
+.mnav-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 62%, rgba(255,0,53,0.10) 62%),
+    repeating-linear-gradient(-45deg, rgba(255,0,53,0.04) 0 12px, transparent 12px 30px);
+}
+.mnav-links { position: relative; display: flex; flex-direction: column; }
+.mnav-link {
+  display: flex; align-items: baseline; gap: 16px;
+  padding: 14px 0;
+  font-family: var(--font-bebas); font-size: 46px;
+  letter-spacing: 0.06em; line-height: 1; color: #fff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,0,53,0.15);
+  opacity: 0; transform: translateX(-28px);
+  animation: mnav-link-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  transition: color 0.2s;
+}
+.mnav-link:active { color: var(--red); }
+@keyframes mnav-link-in {
+  to { opacity: 1; transform: translateX(0); }
+}
+.mnav-num {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; color: var(--red);
+  min-width: 26px;
+}
+.mnav-cta { color: var(--red); border-bottom: none; }
+.mnav-foot {
+  position: relative;
+  display: flex; gap: 14px; margin-top: 36px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.2em; color: var(--muted);
+}
+.mnav-foot a { color: var(--muted); text-decoration: none; }
+.mnav-foot a:active { color: var(--red); }
+
+/* Touch feedback — P5 tugmalar bosilganda */
+.p5-btn:active { transform: skewX(-12deg) scale(0.96); }
+
+/* ═══ TOUCH: kartalar scroll bilan "yonadi" (hover o'rnida) ═══ */
+@media (hover: none) {
+  .pf-active .pf-bg::after { opacity: 1; animation-play-state: running; }
+  .pf-active .pf-burst     { opacity: 1; animation-play-state: running; }
+  .pf-active .pf-scan      { opacity: 1; animation-play-state: running; }
+  .pf-active .pf-shine     { opacity: 0.55; }
+  .pf-active .pf-c         { opacity: 1; transform: translate(0, 0); }
+  .pf-active .pf-ghost     { -webkit-text-stroke-color: rgba(255,0,53,0.45); }
+  .pf-active .pf-title     { animation: pf-glitch 0.32s steps(2) 1; }
+  .pf-active .pf-tag       { border-color: rgba(255,0,53,0.4); color: #ccc; }
+  .pf-active .pf-link b    { transform: translate(3px, -3px); }
+}
+
+/* ═══ MOBILE CREATIVE PACK ═══════════════════════════════ */
+/* Manga speed-line burst behind hero (mobile only) */
+.h-burst {
+  display: none;
+  position: absolute; left: 50%; top: 32%;
+  width: 150vw; height: 150vw;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,0,53,0.07) 0deg 4deg, transparent 4deg 16deg);
+  animation: pf-spin 34s linear infinite;
+  pointer-events: none;
+}
+/* Compact floating avatar (mobile only) */
+.h-avatar-m {
+  display: none;
+  position: relative;
+  width: 138px; margin: 0 auto 18px;
+  animation: pf-float 5s ease-in-out infinite;
+}
+.h-avatar-m img {
+  width: 100%; height: auto; display: block;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  border: 2px solid rgba(255,0,53,0.55);
+  filter: drop-shadow(0 0 16px rgba(255,0,53,0.4));
+  background: #111;
+}
+.h-avatar-m::after {
+  content: "DEV"; position: absolute; bottom: -7px; left: 50%;
+  transform: translateX(-50%) skewX(-12deg);
+  background: var(--red); color: #fff;
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.2em; padding: 2px 10px;
+}
+/* Vertical katakana accent (mobile hero) */
+.h-kanji {
+  display: none;
+  position: absolute; right: 6px; top: 96px;
+  writing-mode: vertical-rl;
+  font-size: 11px; letter-spacing: 0.5em;
+  color: rgba(255,0,53,0.30);
+  font-weight: 700;
+  pointer-events: none; user-select: none;
+}
+@media (max-width: 768px) {
+  .h-burst    { display: block; }
+  .h-avatar-m { display: block; }
+  .h-kanji    { display: block; }
+}
+/* P5 marquee ticker */
+.p5-marquee {
+  position: relative; z-index: 2;
+  overflow: hidden;
+  background: var(--red);
+  transform: rotate(-1.2deg) scale(1.02);
+  padding: 9px 0;
+  border-top: 2px solid #000; border-bottom: 2px solid #000;
+}
+.p5-marquee-track {
+  display: inline-flex; white-space: nowrap;
+  animation: marquee 18s linear infinite;
+  will-change: transform;
+}
+.p5-marquee-track span {
+  font-family: var(--font-bebas); font-size: 18px;
+  letter-spacing: 0.14em; color: #fff;
+  padding-right: 28px;
+}
+@keyframes marquee { to { transform: translateX(-50%); } }
+.p5-marquee--dark { background: #0c0c0c; border-color: rgba(255,0,53,0.4); }
+.p5-marquee--dark .p5-marquee-track span { color: transparent; -webkit-text-stroke: 1px rgba(255,0,53,0.8); }
+/* Hot tag highlight (random glitch cycle) */
+.ab-tag.tag-hot {
+  border-color: var(--red) !important;
+  color: #fff !important;
+  background: rgba(255,0,53,0.18) !important;
+  box-shadow: 0 0 12px rgba(255,0,53,0.35);
+}
+/* Contact build hologram wrapper — visible on mobile too */
+.ct-holo { display: flex; justify-content: flex-end; }
+@media (max-width: 768px) {
+  .ct-holo { justify-content: center; }
+}
+
 /* ── MOBILE (≤ 768px) ─────────────────────────────────── */
 @media (max-width: 768px) {
   .p5-grid-2 { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Hero — markazlashgan kompozitsiya, 100vh markazlash YO'Q (katta bo'shliqni oladi) */
+  .hero-section {
+    text-align: center;
+    min-height: auto !important;
+    align-items: flex-start !important;
+  }
+  .hero-grid > div:first-child { display: flex; flex-direction: column; align-items: center; }
+  .h-stripe, .h-stripe2 { width: 100%; }
+  .h-scroll { display: none !important; }
+  .h-badge { margin-bottom: 16px !important; }
 
   /* Restore cursor on touch */
   *, *::before, *::after { cursor: auto !important; }
@@ -200,18 +540,18 @@ body::after {
   .nav-header { padding: 0 20px !important; }
 
   /* Hero */
-  .hero-section { padding: 84px 20px 48px !important; }
-  .hero-grid    { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .hero-section { padding: 82px 20px 40px !important; }
+  .hero-grid    { grid-template-columns: 1fr !important; gap: 12px !important; }
 
   /* Hero names — fit narrow screens, no overflow */
   .h-name1 h1, .h-name2 h1 {
     font-size: clamp(42px, 13.5vw, 72px) !important;
     letter-spacing: 0.03em !important;
   }
-  .h-ep { font-size: 8px !important; margin-bottom: 24px !important; }
+  .h-ep { font-size: 8px !important; margin-bottom: 18px !important; }
 
   /* Stat boxes — 2×2 grid, centered */
-  .h-stats { justify-content: center !important; gap: 4px !important; margin-bottom: 32px !important; }
+  .h-stats { justify-content: center !important; gap: 4px !important; margin-bottom: 26px !important; }
   .h-stat .p5-skew-inner { padding: 10px 16px !important; }
 
   /* CTA buttons — full-width stack */
@@ -221,20 +561,23 @@ body::after {
 
   /* About pinned panel */
   .ab-content { padding: 0 20px !important; }
-  .ch-marker  { margin-bottom: 24px !important; }
+  .ch-marker  { margin-bottom: 20px !important; }
 
   /* About grids + sections */
-  .about-2col { grid-template-columns: 1fr !important; gap: 32px !important; }
-  .about-pad  { padding: 56px 20px !important; }
+  .about-2col { grid-template-columns: 1fr !important; gap: 26px !important; }
+  .about-pad  { padding: 48px 20px !important; }
 
   /* Projects — single column, no 330px min overflow */
-  .proj-pad  { padding: 72px 20px !important; }
+  .proj-pad  { padding: 56px 20px !important; }
   .proj-grid { grid-template-columns: 1fr !important; }
   .pr-card   { padding: 22px 18px !important; }
+  .pr-head   { margin-bottom: 30px !important; }
 
   /* Contact */
-  .ct-pad { padding: 72px 20px 56px !important; }
+  .ct-pad { padding: 56px 20px 44px !important; }
   .ct-card { flex: 1 1 100% !important; }
+  .ct-pad .about-2col { margin-bottom: 30px !important; }
+  .ct-lines { margin-bottom: 0 !important; }
 
   /* Footer — centered stack */
   .ft-pad {
@@ -253,4 +596,16 @@ body::after {
 @media (max-width: 400px) {
   .h-name1 h1, .h-name2 h1 { font-size: clamp(36px, 12.5vw, 48px) !important; }
   .h-stat .p5-skew-inner   { padding: 8px 12px !important; }
+}
+
+/* ═══ REDUCED MOTION — harakat sezgirligi bor foydalanuvchilar ═══ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto !important; }
+  /* Doimiy harakatli dekorlar butunlay yashiriladi */
+  .h-burst, .pf-burst, .pf-scan { display: none !important; }
 }

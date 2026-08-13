@@ -65,10 +65,23 @@ export default function Projects() {
           gsap.from(card, {
             opacity: 0,
             x: i % 2 === 0 ? -60 : 60,
+            rotation: i % 2 === 0 ? -2.5 : 2.5,
             duration: 0.75, ease: "power3.out",
             scrollTrigger: { trigger: card, start: "top 88%" },
           });
         });
+
+        // Touch qurilmalarda hover yo'q — karta markazga kelganda "yonadi"
+        if (window.matchMedia("(hover: none)").matches) {
+          cards.forEach(card => {
+            ScrollTrigger.create({
+              trigger: card,
+              start: "top 62%",
+              end: "bottom 38%",
+              onToggle: self => card.classList.toggle("pf-active", self.isActive),
+            });
+          });
+        }
       }, ref);
       return () => ctx.revert();
     };
@@ -114,95 +127,72 @@ export default function Projects() {
         <div className="proj-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))",
-          gap: 2,
+          gap: 18,
         }}>
           {PROJECTS.map(p => (
-            <div
+            <a
               key={p.num}
-              className="pr-card"
-              style={{
-                padding: 28,
-                background: "var(--gray)",
-                position: "relative",
-                borderTop: `3px solid ${p.accent}`,
-                transition: "background 0.3s, transform 0.3s",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,0,53,0.07)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-5px)";
+              href={p.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pr-card pf-card"
+              style={{ "--acc": p.accent } as React.CSSProperties}
+              onMouseMove={e => {
+                const el = e.currentTarget;
+                const r = el.getBoundingClientRect();
+                const px = (e.clientX - r.left) / r.width  - 0.5;
+                const py = (e.clientY - r.top)  / r.height - 0.5;
+                el.style.setProperty("--ry", `${(px * 14).toFixed(2)}deg`);
+                el.style.setProperty("--rx", `${(-py * 10).toFixed(2)}deg`);
+                el.style.setProperty("--mx", `${((px + 0.5) * 100).toFixed(1)}%`);
+                el.style.setProperty("--my", `${((py + 0.5) * 100).toFixed(1)}%`);
+                el.style.setProperty("--px", px.toFixed(3));
+                el.style.setProperty("--py", py.toFixed(3));
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.background = "var(--gray)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                const el = e.currentTarget;
+                el.style.setProperty("--ry", "0deg");
+                el.style.setProperty("--rx", "0deg");
+                el.style.setProperty("--px", "0");
+                el.style.setProperty("--py", "0");
               }}
             >
-              {/* Number + badge */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: p.accent, letterSpacing: "0.15em" }}>
-                  [{p.num}]
-                </span>
-                <div className="p5-skew" style={{ background: p.accent }}>
-                  <span className="p5-skew-inner" style={{
-                    fontFamily: "var(--font-mono)", fontSize: 9,
-                    fontWeight: 700, letterSpacing: "0.12em",
-                    color: p.accent === "var(--gold)" ? "#000" : "#fff",
-                    padding: "2px 10px", display: "block",
-                  }}>
-                    {p.badge}
+              <div className="pf-inner">
+                <div className="pf-bg" />
+                <div className="pf-burst" />
+                <div className="pf-shine" />
+                <div className="pf-scan" />
+                <span className="pf-ghost">{p.num}</span>
+
+                <span className="pf-c pf-c-tl" /><span className="pf-c pf-c-tr" />
+                <span className="pf-c pf-c-bl" /><span className="pf-c pf-c-br" />
+
+                <div className="pf-head">
+                  <span className="pf-file">FILE No.{p.num}</span>
+                  <span className="pf-badge">
+                    <span style={{ color: p.accent === "var(--gold)" ? "#000" : "#fff" }}>
+                      {p.badge}
+                    </span>
                   </span>
+                  <span className="pf-barcode" />
+                </div>
+
+                <h3 className="pf-title">{p.title}</h3>
+                <p className="pf-sub">{p.sub}</p>
+                <p className="pf-desc">{p.desc}</p>
+
+                <div className="pf-tags">
+                  {p.tags.map(t => (
+                    <span key={t} className="pf-tag">{t}</span>
+                  ))}
+                </div>
+
+                <div className="pf-foot">
+                  <span className="pf-status"><i />ACTIVE</span>
+                  <span className="pf-link">OPEN FILE <b>↗</b></span>
                 </div>
               </div>
-
-              {/* Title */}
-              <h3 style={{
-                fontFamily: "var(--font-bebas)", fontSize: 26,
-                letterSpacing: "0.04em", color: "#fff",
-                lineHeight: 1, marginBottom: 6,
-              }}>
-                {p.title}
-              </h3>
-
-              <p style={{
-                fontFamily: "var(--font-mono)", fontSize: 9,
-                letterSpacing: "0.1em", color: "var(--muted)",
-                marginBottom: 14,
-              }}>
-                {p.sub}
-              </p>
-
-              <p style={{ fontSize: 13, lineHeight: 1.75, color: "#888", marginBottom: 18 }}>
-                {p.desc}
-              </p>
-
-              {/* Tags */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 20 }}>
-                {p.tags.map(t => (
-                  <span key={t} style={{
-                    fontFamily: "var(--font-mono)", fontSize: 9,
-                    letterSpacing: "0.12em", padding: "3px 9px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "var(--muted)",
-                  }}>
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              {/* Link */}
-              <a
-                href={p.href} target="_blank" rel="noopener noreferrer"
-                style={{
-                  fontFamily: "var(--font-mono)", fontSize: 10,
-                  fontWeight: 700, letterSpacing: "0.2em",
-                  color: p.accent, textDecoration: "none",
-                  transition: "opacity 0.2s",
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = "0.6")}
-                onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
-              >
-                ◆ GITHUB ↗
-              </a>
-            </div>
+            </a>
           ))}
         </div>
 
